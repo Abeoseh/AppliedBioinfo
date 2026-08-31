@@ -11,8 +11,8 @@ I am using VSCode
 
     *From within the AppliedBioinfo folder*
 ```bash
-mkdir -p assignments/assignment1
-cd assignments/assignment1
+mkdir -p assignment1
+cd assignment1
 touch README.md
 ```
 
@@ -26,7 +26,7 @@ output: samtools 1.24
 
 7. Show commands needed to create a nested directory structure.
 ```bash
-mkdir -p assignments/assignment1/nestedtest/filefolder
+mkdir -p assignment1/nestedtest/filefolder
 ```
 *The -p creates a nested directory structure*
 
@@ -34,12 +34,12 @@ mkdir -p assignments/assignment1/nestedtest/filefolder
 8. Show commands that create files in different directories</br>
 *If you just want to make it:*
 ```bash
-cd assignments/assignment1/nestedtest/filefolder
+cd assignment1/nestedtest/filefolder
 touch testfile
 ```
 *If you want to make it and open it:*
 ```bash
-cd assignments/assignment1/nestedtest/filefolder
+cd assignment1/nestedtest/filefolder
 nano testfile1
 ```
 write `#Assignment 1` in `testfile1` then press `ctrl+x`, `y`, `enter`
@@ -47,7 +47,7 @@ write `#Assignment 1` in `testfile1` then press `ctrl+x`, `y`, `enter`
 
 *If you want to make the file while adding text to it:*
 ```bash
-cd assignments/assignment1/nestedtest/filefolder
+cd assignment1/nestedtest/filefolder
 echo "#Assignment 1" > testfile2
 ```
 
@@ -60,11 +60,11 @@ pwd
 
 Relative:
 ```bash
-nano ./assignments/assignment1/README.md
+nano ./assignment1/README.md
 ```
 Absloute
 ```bash
-nano /mnt/c/Users/brean/Downloads/phd/AppliedBioinfo/assignments/assignment1/README.md
+nano /mnt/c/Users/brean/Downloads/phd/AppliedBioinfo/assignment1/README.md
 ```
 
 10. Commit and push your changes to the repository.
