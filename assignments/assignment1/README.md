@@ -3,7 +3,8 @@
 
 ### Assignment 1
 1. Follow the Getting Started instructions to set up your computer.
-2. Install an AI ready code editor as described on the page.
+2. Install an AI ready code editor as described on the page.</br>
+I am using VSCode
 3. Create a GitHub account and create a public repository under your account.
 4. Create a new directory for this week's assignment. Add a README.md file to the directory
 5. Write the commands and their outputs into the README.md file. Format it nicely.</br>
