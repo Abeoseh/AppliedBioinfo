@@ -1,2 +1,5 @@
 lectures/
 scripts/
+*.gz
+*.fna
+*.gff
