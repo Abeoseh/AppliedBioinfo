@@ -1,5 +1,5 @@
 lectures/
 scripts/
-*.gz
-*.fna
+week02/find_files.md
 *.gff
+*.fna

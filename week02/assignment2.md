@@ -7,6 +7,11 @@ Prerequisites
     Load both into a genome visualization platform.
         I chose IGV
 
+Note: the data files are not available since they were too large to host on github:
+> remote: error: File week02/data/GCF_977971745.1_Znev_1.0_genomic.fna is 556.50 MB; this exceeds GitHub's file size limit of 100.00 MB
+
+> remote: error: File week02/data/GCF_977971745.1_Znev_1.0_genomic.gff is 292.36 MB; this exceeds GitHub's file size limit of 100.00 MB
+
 
 
 - **How tightly packed are the genes in this genome? Estimate the gene-to-gene distance via the browser.**
