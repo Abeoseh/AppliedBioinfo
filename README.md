@@ -12,3 +12,5 @@ Book: https://www.biostarhandbook.com/index.html
 
 [Assignment 2](https://github.com/Abeoseh/AppliedBioinfo/tree/main/assignment2)
 
+[Assignment 3](https://github.com/Abeoseh/AppliedBioinfo/tree/main/assignment3)
+

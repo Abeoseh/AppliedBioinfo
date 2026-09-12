@@ -1,9 +1,11 @@
 Every week students are assigned to review two repositories created by their classmates. For this assignment select one of these repositories. 
 
 - Fork the clone one of the repositories you were assigned to review.
-    - For this assignment I chose [Brian Praul's Week two assingment](https://github.com/BrianPraul/BMMB_852/tree/main/Week%202%20Assignment)
+    - For this assignment I chose [Brian Praul's Week two assignment](https://github.com/BrianPraul/BMMB_852/tree/main/Week%202%20Assignment)
 
     I used Github's web interface to fork the code and `git clone https://github.com/Abeoseh/BMMB_852.git` to clone the assignment onto my local.
+
+    The repo I forked is here: https://github.com/Abeoseh/BMMB_852
 
 - Verify that the code is not doing something dangerous.
     - To verify the code, I manually evaluated the code myself and also asked ChatGPT if the code was safe to run. Here is a snippet of the output:
