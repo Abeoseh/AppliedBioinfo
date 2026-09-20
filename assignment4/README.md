@@ -19,9 +19,9 @@
 
 >     Strategy
 >        EpiGenomics(47)
->        Exome(490)</br>
->        Genome(490)</br>
->        RNASeq(1)</br>
+>        Exome(490)
+>        Genome(490)
+>        RNASeq(1)
 >        other(3,517)
 
 
