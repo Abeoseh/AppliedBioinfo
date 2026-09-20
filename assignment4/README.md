@@ -6,7 +6,7 @@
 > I searched https://www.ncbi.nlm.nih.gov/sra for `(Zootermopsis nevadensis[Organism]) OR termites[Organism]` and got 4545 total sequences with 469 whole genome sequences.
 
 
------------------
+
 2. What is the breakdown by sequencing strategy and platform (or some other attribute)?
 >     Platform
 >        BGISEQ(3)
@@ -24,11 +24,11 @@
 >        RNASeq(1)</br>
 >        other(3,517)
 
-------------
+
 3. What do you find interesting or surprising?
 > It is interesting that there are so few RNAseq datasets. I thought that since termites are such a common pest people would be more interested in studying the genetic expression to better target them for removal.
 
------
+
 ## Download FASTQ files for an experiment
 1. The Makefile should download the first N reads from an SRR accession.
 2. Place the files in directories named after the data type.
