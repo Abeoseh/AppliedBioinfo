@@ -36,17 +36,12 @@
 4. Apply a QC method to the reads to see whether it makes a visual difference.
 5. Run a QC visualization on the trimmed reads to generate a report.
 
-Running the make file **without** command line arguments:</br>
-`make`</br>
-which automatically uses `SRR40309130` with `10` reads
+Running the make file **without** command line arguments: `make` which automatically uses `SRR40309130` with `10` reads
 
-Running the make file **with** command line arguments
-`make SRR SRR_ID=SRR_ID N=NUM_READS`</br>
-for example:</br>
-`make SRR SRR_ID=SRR40309131 N=10`
+Running the make file **with** command line arguments:`make SRR SRR_ID=SRR_ID N=NUM_READS`. For example: `make SRR SRR_ID=SRR40309131 N=10`.
 
 
-As my quality control software, I used fastqc to read the base scores then used fastp to trim the low quality beginning and ends as well as the adapters. When I run the make files on SRR40309131 with 10 reads I have very low quality beginnings which is then trimmed after fastp.
+As my quality control software, I used fastqc to read the base scores then used fastp to trim the low quality beginning and ends as well as the adapters. When I run the make file on SRR40309131 with 10 reads I have very low quality beginnings which is then trimmed after fastp.
 
 
 **Before fastp**
