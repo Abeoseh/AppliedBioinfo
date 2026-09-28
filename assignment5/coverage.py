@@ -9,4 +9,5 @@ plt.xticks(rotation=90)
 plt.savefig("./images/coverage_uniform.png")
 
 print(f"There are {len(counts)} positions with a max coverage of {max(counts.values())} and a min coverage of {min(counts.values())}")
+print("{position: coverage}")
 print(counts)
