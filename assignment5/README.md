@@ -4,12 +4,12 @@
 
 The SRA experiment I am using is **ERR15846824** which was sequenced using Illumina HiSeq 2500 which tends to generate reads of length 300kb (or 600 for paired end reads). The genome size for Bacillus subtilis subsp. subtilis str. 168 is 4.2Mb. The equation for coverage is:
 
-$coverage = \frac{read\_length * num\_reads}{genome\_size}$
+$coverage = \frac{read\\_length * num\\_reads}{genome\\_size}$
 
 so to get the total number of reads for 10x coverage at a read length of 600 I would use:
 
 $$
-num\_reads = \frac{genome\_size * coverage}{read\_length}
+num\_reads = \frac{genome\\_size * coverage}{read\\_length}
 = \frac{4,215,606*10x}{600} = 70,260.1
 $$
 
