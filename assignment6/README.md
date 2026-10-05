@@ -29,7 +29,7 @@ Sample 2 was a lot less clean when compared to sample 1. Similar to sample 1, th
 
 ## Sample 3
 
-Similar to sample 2, sample 3 had a lot more disagreement among reads concerning base calls. The coverage of sample 3 ranged between 0x and 167x. Around 1,000 and 6,000 there are 3 duplications which were not as represented on samples one and two. Within this copy number variation, there is a lot of disagreement about the base calls which could either represent sequencing/alignment errors or SNPs. This sample also has a lot of deletions.
+Similar to sample 2, sample 3 had a lot more disagreement among reads concerning base calls. The coverage of sample 3 ranged between 0x and 167x. Around 1,000 to 2,000; 3,000 to 4,000; and 5,000 to 6,000 there are 3 duplications which were not as represented on samples one and two with 3,000 to 5,000 representating a triduplication. Within this copy number variation, there is a lot of disagreement about the base calls which could either represent sequencing/alignment errors or SNPs. This sample also has a lot of deletions.
 
 ## Sample 4
 
