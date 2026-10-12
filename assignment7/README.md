@@ -2,7 +2,7 @@
 
 ## Ensure that you get at least 10x coverage of the genome.
 
-The SRA experiment I am using is **ERR15846824** ("Bacillus subtilis subsp. subtilis str. 168") which was sequenced using Illumina HiSeq 2500 which tends to generate reads of length 300 bases (or 600 bases for paired end reads). The genome size for my reference, "Bacillus velezensis FZB42", is 3.9Mb. The equation for coverage is:
+The SRA experiment I am using is **ERR15846824** ("Bacillus subtilis subsp. subtilis str. 168") which was sequenced using Illumina HiSeq 2500 which tends to generate reads of length 300 bases (or 600 bases for paired end reads). The genome size for my reference, "Bacillus velezensis FZB42", is 3.9Mb. I didn't use a Bacillus subtilis subsp. subtilis str. 168 since I did not find any variants with bcftools. The equation for coverage is:
 
 $coverage = \frac{read\\_length * num\\_reads}{genome\\_size}$
 
