@@ -3,7 +3,11 @@ scripts/
 assignment2/find_files.md
 *.gff*
 *.fna*
+*.vcf*
 assignment4/SRR/
 assignment4/Makefile_old.txt
 Assignment5/ERR15846824
 Assignment7/ERR15846824
+Assignment8/ERR15846824
+Assignment8/DRR1105562
+Assignment8/ERR15846822
