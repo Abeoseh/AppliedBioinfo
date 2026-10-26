@@ -1,76 +1,284 @@
-# Bacillus subtilis variant-calling workflow
+# *Bacillus subtilis* variant-calling workflow
 
-This directory contains a reproducible, Make-based workflow to download paired-end
-reads, align them to the *Bacillus subtilis* subsp. *subtilis* strain 168 reference,
-call haploid variants with bcftools, and combine the per-run calls into a
+This directory contains a Makefile workflow for downloading paired-end reads
+from SRA, aligning them to the *Bacillus subtilis* subsp. *subtilis* strain 168
+reference, calling variants with bcftools, and merging per-run calls into a
 multi-sample VCF.
 
-## Study and design
+The commands below assume you are in this directory in WSL/Linux. The workflow
+uses relative paths, so running `make` from another directory will not find
+the inputs and outputs in the expected places.
 
-The ten runs in [`design.csv`](./design.csv) are paired-end genomic-DNA runs
-from BioProject PRJEB102831, selected from the BioProject's SRA/ENA run
-metadata. The project studies how long-range mRNA folding relates to bacterial
-gene expression and sequence. This subset uses genomic-DNA runs (rather than
-the project's transcriptomic runs) for variant calling against the
-*B. subtilis* subsp. *subtilis* strain 168 reference. `Run` contains each SRA
-run accession used for retrieval; `Sample` and `Group` are readable labels
-derived from the run metadata.
+## Study and sample design
 
-The workflow defaults to 140,000 paired-end spots per run. Assuming 150-base
-reads and a 4.2 Mb reference, that is approximately 10-fold depth:
+[`design.csv`](./design.csv) lists ten paired-end genomic-DNA runs from
+BioProject PRJEB102831. The project studies how long-range mRNA folding relates
+to bacterial gene expression and sequence. These runs were selected from the
+project's SRA/ENA metadata; transcriptomic runs were excluded because RNA-seq
+is not the intended input for this genomic variant-calling workflow.
+
+The CSV columns are:
+
+| Column | Meaning | Used by the Makefile |
+| --- | --- | --- |
+| `Run` | SRA run accession used to retrieve the reads | Yes; the batch target passes it as `SRR_ID` |
+| `Sample` | Readable sample label | No; documentation/metadata only |
+| `Group` | Readable sample group | No; documentation/metadata only |
+| `BioProject` | Source BioProject accession | No; documentation/metadata only |
+
+The run accession is also used as the sample name in its VCF. The default
+workflow uses 140,000 paired-end spots per run. With two 150-base reads per
+spot and a 4.2 Mb genome, this is approximately 10x nominal sequence depth:
 
 ```text
 140,000 spots x 2 reads/spot x 150 bases/read / 4,200,000 bases ~= 10x
 ```
 
-The `N` parameter is the maximum spot number passed to `fastq-dump`, not the
-number of individual reads. The cap limits download and compute costs and can
-be overridden for a quick test.
+Actual depth depends on read length, filtering, and mapping. `N` is the maximum
+spot number requested from `fastq-dump`, not the number of individual reads.
 
-## Requirements
+## Requirements and setup
 
-Run the workflow in WSL/Linux with the `bioinfo` environment active. The
+Run the analysis inside WSL/Linux with the `bioinfo` environment active. The
 environment must provide GNU Make, SRA Toolkit (`fastq-dump`), BWA, SAMtools,
-bcftools, seqkit, and GNU parallel. For example:
-
-
-## Run the workflow
-
-From this directory, process the default sample:
+bcftools, seqkit, and GNU parallel.
 
 ```bash
-make all
+conda activate bioinfo
+cd /mnt/c/Users/<your-user>/Downloads/phd/AppliedBioinfo/assignment9
 ```
 
-Choose another run or change the spot cap and thread count with Make variables:
+Check that the programs are available before starting:
 
 ```bash
-make all SRR_ID=ERR15846822 N=32655 THREADS=2
+make --version
+fastq-dump --version
+bwa
+samtools --version
+bcftools --version
+seqkit version
+parallel --version
 ```
 
-Run the default design as a batch and merge the sample VCFs:
+The workflow downloads the reference FASTA and GFF3 from Ensembl Bacteria
+release 63 when those files are missing. It downloads reads from SRA, so the
+machine needs internet access and enough disk space for FASTQs, BAMs, and VCFs.
+
+## Quick start: run all ten samples
+
+From this directory, activate `bioinfo` and run:
 
 ```bash
 make batch
 ```
 
-To control concurrency and per-sample resources:
+This is the normal end-to-end command. It:
+
+1. Ensures the reference genome and annotation files exist.
+2. Builds the shared BWA index if it is missing.
+3. Reads each run accession from the `Run` column of `design.csv`.
+4. Uses GNU parallel to run the single-sample workflow for each run.
+5. Merges all per-run VCFs into one indexed, multi-sample VCF.
+
+The default resource settings are `N=140000`, `THREADS=2`, and `JOBS=2`.
+Override them on the command line as needed:
 
 ```bash
 make batch JOBS=2 THREADS=2 N=140000
 ```
 
-`JOBS` is the number of runs processed concurrently. `THREADS` is the number of
-threads used by BWA and SAMtools for each run. The batch target builds the
-shared reference index once, reads run accessions from the `Run` column of
-`design.csv`, launches `make all` for each run using GNU parallel, and merges
-all ten resulting VCFs. Add or remove design rows to change the batch.
+- `JOBS` is the number of sample workflows GNU parallel runs at the same time.
+- `THREADS` is passed to BWA and SAMtools for each sample. Total CPU use can
+  approach `JOBS x THREADS` threads.
+- `N` is the requested maximum number of SRA spots per run.
+- `DESIGN` selects a design CSV; by default it is `design.csv`.
 
-## Outputs
+For example, to use another design file:
 
-Each run has its own directory:
+```bash
+make batch DESIGN=pilot_design.csv JOBS=1 THREADS=2 N=50000
+```
+
+The design file must have a header containing `Run`, followed by one run
+accession per row. `Sample`, `Group`, and `BioProject` are useful descriptive
+columns, but only `Run` controls which data the Makefile processes.
+
+## Run one sample
+
+The single-sample workflow is the building block used by `batch`. By default,
+`SRR_ID` is `ERR15846824`:
+
+```bash
+make all
+```
+
+Choose a different run or spot limit with command-line Make variables:
+
+```bash
+make all SRR_ID=ERR15846776 N=140000 THREADS=2
+```
+
+`all` is the default end-to-end single-sample target. It ensures the reference
+is present, then builds the sample's FASTQs, alignment, and VCF through their
+file dependencies. Run-specific outputs are placed under a directory named
+for `SRR_ID`.
+
+## Make targets, in detail
+
+The Makefile exposes the following targets. Target names are case-sensitive.
+
+### `all`
+
+```bash
+make all SRR_ID=ERR15846776 N=140000 THREADS=2
+```
+
+Runs the reference target and builds that run's compressed VCF. The VCF depends
+on the sorted/indexed BAM; the BAM depends on the FASTQs and the shared BWA
+index. Make skips output files it considers up to date.
+
+### `GENOME`
+
+```bash
+make GENOME
+```
+
+Downloads and decompresses the reference FASTA and GFF3 annotation into
+`ref_genome/` when the files are missing. `GENOME_URL`, `ANNOTATION_URL`,
+`REF_FILE`, and `ANN_FILE` can be overridden if using different reference
+files. The reference FASTA must match the annotation and the samples being
+analyzed.
+
+### `FASTQs`
+
+```bash
+make FASTQs SRR_ID=ERR15846776 N=140000
+```
+
+Creates `<SRR_ID>/fastq/` and runs:
+
+```bash
+fastq-dump -X <N> --split-files <SRR_ID> --outdir <SRR_ID>/fastq
+```
+
+The expected outputs are `<run>_1.fastq` and `<run>_2.fastq`. The Makefile
+checks whether both existing files contain the requested number of spots and
+records that setting in a `.spots-<N>.complete` stamp. If the files do not
+match, it removes the two FASTQs and downloads them again. `seqkit stats`
+reports the read counts and lengths.
+
+To force a fresh download at the same spot limit, remove only that run's
+`fastq/` directory, then run the target again. Do not delete other project
+directories to refresh FASTQs.
+
+### `INDEX`
+
+```bash
+make INDEX
+```
+
+Builds a shared BWA index from the reference FASTA, using prefix
+`ref_genome/index/bsubtilis168`. It is shared by all samples; each run does not
+need its own copy.
+
+### `ALIGN`
+
+```bash
+make ALIGN SRR_ID=ERR15846776 N=140000 THREADS=2
+```
+
+Aligns the paired FASTQs with `bwa mem`, adds a read group/sample identifier,
+sorts the alignments with `samtools sort`, and indexes the BAM with
+`samtools index`. `samtools flagstat` prints alignment statistics.
+
+Outputs:
 
 ```text
+<run>/bam/<run>.bam
+<run>/bam/<run>.bam.bai
+```
+
+### `VARIANTS`
+
+```bash
+make VARIANTS SRR_ID=ERR15846776 N=140000 THREADS=2
+```
+
+Uses bcftools to pile up read evidence from the BAM, call variants as haploid
+(`--ploidy 1`), normalize alleles against the reference, remove duplicate
+records, and write a compressed, indexed VCF. The mpileup depth is capped at
+50 reads per position per sample.
+
+Outputs:
+
+```text
+<run>/vcf/<run>.vcf.gz
+<run>/vcf/<run>.vcf.gz.csi
+```
+
+### `batch`
+
+```bash
+make batch
+```
+
+Builds the shared reference/index, then runs `make all` for every `Run` in the
+design CSV using GNU parallel. Once all sample commands finish successfully,
+it invokes `MERGE_VARIANTS`. If one sample fails, GNU parallel reports the
+failure and the merge step is not reached.
+
+### `MERGE_VARIANTS`
+
+```bash
+make MERGE_VARIANTS
+```
+
+Merges the per-run compressed VCFs listed in the current design file using
+`bcftools merge`. It checks that each expected VCF exists first; it does not
+run the missing sample workflows. To call missing samples and then merge, use
+`make batch`.
+
+Outputs:
+
+```text
+merged_vcf/merged-VCF.vcf.gz
+merged_vcf/merged-VCF.vcf.gz.csi
+```
+
+This is a multi-sample merge at variant sites, not concatenation of files from
+different genomic regions.
+
+## Running targets in stages
+
+The targets can also be run one at a time to inspect intermediate files:
+
+```bash
+make GENOME
+make FASTQs SRR_ID=ERR15846776 N=140000
+make INDEX
+make ALIGN SRR_ID=ERR15846776 N=140000 THREADS=2
+make VARIANTS SRR_ID=ERR15846776 N=140000 THREADS=2
+```
+
+Repeat the sample-specific steps with another `SRR_ID`, then merge the VCFs
+specified by the design:
+
+```bash
+make MERGE_VARIANTS
+```
+
+For most use, `make all SRR_ID=<run>` or `make batch` is simpler because Make
+follows the file dependencies automatically.
+
+## Outputs and inspection
+
+After a batch run, the output layout is:
+
+```text
+ref_genome/
+  <reference FASTA>
+  <reference GFF3>
+  index/bsubtilis168.*
 <run>/
   fastq/<run>_1.fastq
   fastq/<run>_2.fastq
@@ -78,36 +286,49 @@ Each run has its own directory:
   bam/<run>.bam.bai
   vcf/<run>.vcf.gz
   vcf/<run>.vcf.gz.csi
+merged_vcf/
+  merged-VCF.vcf.gz
+  merged-VCF.vcf.gz.csi
 ```
 
-The combined, indexed multi-sample callset is
-`merged_vcf/merged-VCF.vcf.gz` (with its CSI index). `bcftools merge` combines
-the sample records at shared and sample-specific variant sites. This is a
-multi-sample VCF, not a concatenation of files with disjoint genomic regions.
+Useful commands for checking the result are:
 
-## Results and interpretation
+```bash
+# List the samples represented in the merged VCF.
+bcftools query -l merged_vcf/merged-VCF.vcf.gz
 
-The pre-existing ERR15846824 data in this directory were generated from 32,655
-spots. Its VCF has no variant records at that depth. A zero-call VCF does not
-establish that the sample is identical to the reference: limited coverage,
-quality filtering, and the selected reference can all affect calls. The
-default 140,000-spot run is intended to provide about 10x depth; inspect the
-generated VCFs before drawing conclusions about differences between runs.
+# Count variant records.
+bcftools view -H merged_vcf/merged-VCF.vcf.gz | wc -l
 
-To inspect calls, load the strain 168 FASTA as the reference and
-`merged_vcf/merged-VCF.vcf.gz` as a variant track in IGV. If the merged file
-contains no records, there are no called loci to interpret or visualize; do
-not infer biological similarity from an empty callset alone.
+# Summarize variants and sample count.
+bcftools stats merged_vcf/merged-VCF.vcf.gz
 
-## Reproducibility notes
+# View the first variant records, if present.
+bcftools view -H merged_vcf/merged-VCF.vcf.gz | head
+```
 
-- The reference FASTA and GFF3 are downloaded from Ensembl Bacteria release 63
-  when missing; existing copies are reused.
-- FASTQs are reused when both files contain the requested number of spots.
-  If changing `N`, the workflow downloads the requested amount when the
-  existing files do not match. Remove that run's `fastq/` directory to force a
-  fresh download with the same `N`.
-- Per-run BAMs and VCFs are regenerated by Make when their inputs are newer.
-- The NCBI SRA records and Ensembl reference are external inputs and can change
-  independently of this repository; the run accessions, reference URL, spot
-  cap, and software environment are recorded here and in the Makefile.
+To visualize the calls in IGV, load the matching strain 168 FASTA as the
+reference and `merged_vcf/merged-VCF.vcf.gz` as the variant track. A callset
+with no records provides no loci to interpret. It does not prove that samples
+are identical to the reference.
+
+## Reproducibility and troubleshooting
+
+- `N` is the FASTQ spot cap. Changing `N` changes the FASTQ stamp; existing
+  FASTQs that do not contain the requested number of spots are removed and
+  downloaded again.
+- `THREADS` controls the BWA/SAMtools commands, and `JOBS` controls concurrent
+  runs. Lower either value if the computer is short on memory or CPU.
+- If downloads fail, confirm that WSL has internet access and that the SRA
+  Toolkit can retrieve the run accession. Retry `make FASTQs SRR_ID=<run>
+  N=<spots>` for that run.
+- If the merge says a per-run VCF is missing, rerun `make batch` with the same
+  `DESIGN`, `N`, `THREADS`, and `JOBS` values. The merge target alone cannot
+  generate missing VCFs.
+- A bcftools warning that `MQ` is declared with an unexpected type may appear
+  in VCF header sanity checks. It is a warning, not necessarily a failed
+  variant-calling command; check the command exit status and verify the VCF
+  and index files exist.
+- The SRA reads and Ensembl reference are external inputs. Record the run
+  accessions, reference URLs, spot limit, and software versions when exact
+  reproducibility is required.
