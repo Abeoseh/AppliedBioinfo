@@ -1,14 +1,20 @@
 SHELL := /bin/sh
 
 ## Reference genome URL
-GENOME_URL ?= https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/015/785/GCF_000015785.2_ASM1578v2/GCF_000015785.2_ASM1578v2_genomic.fna.gz
+GENOME_URL ?= https://ftp.ensemblgenomes.ebi.ac.uk/pub/bacteria/release-63/fasta/bacteria_0_collection/bacillus_subtilis_subsp_subtilis_str_168_gca_000009045/dna/Bacillus_subtilis_subsp_subtilis_str_168_gca_000009045.ASM904v1.dna.toplevel.fa.gz
+
+## Reference annotation URL
+ANNOTATION_URL ?= https://ftp.ensemblgenomes.ebi.ac.uk/pub/bacteria/release-63/gff3/bacteria_0_collection/bacillus_subtilis_subsp_subtilis_str_168_gca_000009045/Bacillus_subtilis_subsp_subtilis_str_168_gca_000009045.ASM904v1.63.gff3.gz
 
 ## Get sample from a bioproject
 SRR_ID ?= ERR15846824
 N ?= 32655
 
-REF_FILE ?= GCF_000015785.2_ASM1578v2_genomic.fna
+REF_FILE ?= Bacillus_subtilis_subsp_subtilis_str_168_gca_000009045.ASM904v1.dna.toplevel.fa
+ANN_FILE ?= Bacillus_subtilis_subsp_subtilis_str_168_gca_000009045.ASM904v1.63.gff3
+
 REF_GENOME := $(SRR_ID)/ref_genome/$(REF_FILE)
+REF_ANNOTATION := $(SRR_ID)/ref_genome/$(ANN_FILE)
 FASTQ1 := $(SRR_ID)/fastq/$(SRR_ID)_1.fastq
 FASTQ2 := $(SRR_ID)/fastq/$(SRR_ID)_2.fastq
 
@@ -37,6 +43,8 @@ GENOME:
 	## dir is similar to bash's basename so it extracts the directory
 	mkdir -p $(dir $(REF_GENOME))
 	curl -fsSL $(GENOME_URL) | gunzip > $(REF_GENOME)
+
+	curl -fsSL $(ANNOTATION_URL) | gunzip > $(REF_ANNOTATION)
 	
 	echo ""
 	echo "Genome stats for Bacillus subtilis subsp. subtilis str. 168 "
@@ -74,7 +82,7 @@ VARIANTS:
 	mkdir -p $(SRR_ID)/vcf
 	bcftools mpileup -d 50 --annotate 'INFO/AD,FORMAT/DP,FORMAT/AD,FORMAT/ADF,FORMAT/ADR,FORMAT/SP' \
 	-O u -f $(REF_GENOME) $(BAM_FILE) | \
-	bcftools call --ploidy 2 --annotate 'FORMAT/GQ' -mv -O u | \
+	bcftools call --ploidy 1 --annotate 'FORMAT/GQ' -mv -O u | \
 	bcftools norm -f $(REF_GENOME) -d all -O u | \
 	bcftools sort --write-index -O z -o $(SRR_ID)/vcf/$(SRR_ID).vcf.gz
 
@@ -92,3 +100,22 @@ MERGE_VARIANTS:
 		-o merged_vcf/merged-VCF.vcf.gz \
 		$$(find . -name '*.vcf.gz' -not -path './merged_vcf/*')
 	gunzip -kf merged_vcf/merged-VCF.vcf.gz
+
+
+	# Add consequence annotations to the VCF
+	bcftools csq \
+		-p a \
+		-f $(REF_GENOME) \
+		-g $(REF_ANNOTATION) \
+		-O z -W \
+		-o merged_vcf/merged-VCF.csq.vcf.gz \
+		merged_vcf/merged-VCF.vcf.gz
+
+
+	# Write one consequence per row
+	bcftools +split-vep merged_vcf/merged-VCF.csq.vcf.gz \
+    		-a BCSQ -d -H \
+		-f '%CHROM\t%POS\t%REF\t%ALT\t%Consequence\t%gene\t%transcript\t%biotype\t%strand\t%amino_acid_change\t%dna_change\n' \
+		> merged_vcf/annotations.txt
+
+	
