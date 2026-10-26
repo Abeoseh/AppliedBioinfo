@@ -37,36 +37,8 @@ spot and a 4.2 Mb genome, this is approximately 10x nominal sequence depth:
 Actual depth depends on read length, filtering, and mapping. `N` is the maximum
 spot number requested from `fastq-dump`, not the number of individual reads.
 
-## Requirements and setup
-
-Run the analysis inside WSL/Linux with the `bioinfo` environment active. The
-environment must provide GNU Make, SRA Toolkit (`fastq-dump`), BWA, SAMtools,
-bcftools, seqkit, and GNU parallel.
-
-```bash
-conda activate bioinfo
-cd /mnt/c/Users/<your-user>/Downloads/phd/AppliedBioinfo/assignment9
-```
-
-Check that the programs are available before starting:
-
-```bash
-make --version
-fastq-dump --version
-bwa
-samtools --version
-bcftools --version
-seqkit version
-parallel --version
-```
-
-The workflow downloads the reference FASTA and GFF3 from Ensembl Bacteria
-release 63 when those files are missing. It downloads reads from SRA, so the
-machine needs internet access and enough disk space for FASTQs, BAMs, and VCFs.
 
 ## Quick start: run all ten samples
-
-From this directory, activate `bioinfo` and run:
 
 ```bash
 make batch
