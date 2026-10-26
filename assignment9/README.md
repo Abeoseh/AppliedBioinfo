@@ -1,13 +1,10 @@
-# *Bacillus subtilis* variant-calling workflow
+# Assignment 9
 
 This directory contains a Makefile workflow for downloading paired-end reads
 from SRA, aligning them to the *Bacillus subtilis* subsp. *subtilis* strain 168
 reference, calling variants with bcftools, and merging per-run calls into a
 multi-sample VCF.
 
-The commands below assume you are in this directory in WSL/Linux. The workflow
-uses relative paths, so running `make` from another directory will not find
-the inputs and outputs in the expected places.
 
 ## Study and sample design
 
@@ -303,4 +300,19 @@ are identical to the reference.
   and index files exist.
 - The SRA reads and Ensembl reference are external inputs. Record the run
   accessions, reference URLs, spot limit, and software versions when exact
-  reproducibility is required.
+  reproducibility is required. You cannot run this with NCBI reference genome since bcftools is used for variant annotaion.
+
+
+## Visualize in IGV and interpret results
+
+At 10x coverage, not all bases were equally read. Since I was processing 10 samples on my computer, the highest coverage I could reasonably choose was 10x.
+
+![alt text](images/IGV.png)
+
+Despite this, there were still two frameshift mutations found. 
+
+| POS     | REF      | ALT    | Consequence | gene | transcript | biotype        | strand | amino_acid_change                                                       | dna_change                       |
+|---------|----------|--------|-------------|------|------------|----------------|--------|-------------------------------------------------------------------------|----------------------------------|
+| 1104572 | CGTGAGGA | C      | frameshift  | aprE | CAB12870   | protein_coding | -      | 330TPHVAGAAALILSKHPTWTNAQVRDRLESTATYLGNSFYYGKGLINVQAAAQ\*>330TLPEQQR\* | 1104572CGTGAGGA>C                |
+| 1104572 | CGTGAGGA | C      | @1104580    | .    | .          | .              | .      | .                                                                       | .                                |
+| 1104580 | G        | GCTAGC | frameshift  | aprE | CAB12870   | protein_coding | -      | 330TPHVAGAAALILSKHPTWTNAQVRDRLESTATYLGNSFYYGKGLINVQAAAQ\*>330S\*       | 1104572CGTGAGGA>C+1104580G>GCTAGC |

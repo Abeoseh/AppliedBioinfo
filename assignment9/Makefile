@@ -97,3 +97,20 @@ MERGE_VARIANTS:
 	done
 	mkdir -p merged_vcf
 	bcftools merge --write-index -O z -o merged_vcf/merged-VCF.vcf.gz $(VCF_FILES)
+
+
+	# Add consequence annotations to the VCF
+	bcftools csq \
+		-p a \
+		-f $(REF_GENOME) \
+		-g $(REF_ANNOTATION) \
+		-O z -W \
+		-o merged_vcf/merged-VCF.csq.vcf.gz \
+		merged_vcf/merged-VCF.vcf.gz
+
+
+	# Write one consequence per row
+	bcftools +split-vep merged_vcf/merged-VCF.csq.vcf.gz \
+    	-a BCSQ -d -H \
+		-f '%CHROM\t%POS\t%REF\t%ALT\t%Consequence\t%gene\t%transcript\t%biotype\t%strand\t%amino_acid_change\t%dna_change\n' \
+		> merged_vcf/annotations.txt
