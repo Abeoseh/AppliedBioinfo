@@ -17,6 +17,9 @@ assignment2/find_files.md
 *.pac*
 *.bam*
 *.bai*
+*.bw*
+*.gtf*
+*.fq*
 *.complete*
 assignment4/SRR/
 assignment4/Makefile_old.txt
@@ -39,3 +42,4 @@ assignment9/ERR15846775
 assignment9/ERR15846794
 assignment9/ref_genome
 assignment10/SraRunTable.csv
+assignment11/counts
