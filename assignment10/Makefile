@@ -225,8 +225,16 @@ IGV: PEAKS
 	IGV_MANIFEST="$(IGV_MANIFEST)" \
 	IGV_SESSION="$(IGV_SESSION)" \
 	python3 igv_session.py
-	@echo "Launching IGV..."
-	@$(IGV_CMD) "$(IGV_SESSION)"
+	@echo "IGV session created: $(IGV_SESSION)"
+	@if command -v $(IGV_CMD) &>/dev/null; then \
+	    echo "Launching IGV..."; \
+	    $(IGV_CMD) "$(IGV_SESSION)"; \
+	else \
+	    echo "IGV not found. To open the session manually:"; \
+	    echo "  1. Open IGV from your Applications or Downloads folder"; \
+	    echo "  2. Go to File → Open Session"; \
+	    echo "  3. Navigate to: $(IGV_SESSION)"; \
+	fi
 
 
 # ============================================================
