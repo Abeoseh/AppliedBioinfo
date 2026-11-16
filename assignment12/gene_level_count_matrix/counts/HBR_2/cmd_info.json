@@ -1,0 +1,13 @@
+{
+  "salmon_version": "2.11.0",
+  "index": "fasta/chr22.salmon",
+  "libType": "A",
+  "output": "counts/HBR_2",
+  "mates1": [],
+  "mates2": [],
+  "unmatedReads": [
+    "fastq/HBR_2_R1.fq"
+  ],
+  "threads": 0,
+  "sketch": false
+}

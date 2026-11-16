@@ -1,0 +1,13 @@
+{
+  "salmon_version": "2.11.0",
+  "index": "fasta/chr22.salmon",
+  "libType": "A",
+  "output": "counts/UHR_1",
+  "mates1": [],
+  "mates2": [],
+  "unmatedReads": [
+    "fastq/UHR_1_R1.fq"
+  ],
+  "threads": 0,
+  "sketch": false
+}
